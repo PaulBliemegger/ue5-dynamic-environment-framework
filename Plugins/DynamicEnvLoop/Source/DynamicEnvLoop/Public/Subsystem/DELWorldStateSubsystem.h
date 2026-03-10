@@ -9,6 +9,8 @@
 #include "DELWorldStateConfig.h"
 #include "DELWorldStateSubsystem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionLoggedSignature, FActionRecord, LoggedRecord);
+
 /**
  * 
  */
@@ -17,6 +19,9 @@ class DYNAMICENVLOOP_API UDELWorldStateSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(BlueprintAssignable, Category = "DEL|Events")
+	FOnActionLoggedSignature OnActionLogged;
+	
 	// Step 1: Called by Player/Companions during the Dungeon phase
 	UFUNCTION(BlueprintCallable, Category = "DEL|Observer")
 	void LogAction(FGameplayTag ActionTag, float Intensity = 1.0f);

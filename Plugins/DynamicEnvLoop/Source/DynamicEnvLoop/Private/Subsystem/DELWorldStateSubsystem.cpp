@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Subsystem/DELWorldStateSubsystem.h"
 #include "Engine/World.h"
 
@@ -36,8 +35,10 @@ void UDELWorldStateSubsystem::LogAction(FGameplayTag ActionTag, float Intensity)
 	{
 		NewRecord.Timestamp = World->GetTimeSeconds();
 	}
-
+	
 	CurrentRunHistory.Add(NewRecord);
+	
+	OnActionLogged.Broadcast(NewRecord);
 }
 
 void UDELWorldStateSubsystem::UpdateWorldState()
