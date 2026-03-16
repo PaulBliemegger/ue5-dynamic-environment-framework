@@ -38,6 +38,8 @@ void UDRLWorldStateSubsystem::LogAction(FGameplayTag ActionTag, float Intensity)
 	}
 
 	CurrentRunHistory.Add(NewRecord);
+	
+	OnActionLogged.Broadcast(NewRecord);
 }
 
 void UDRLWorldStateSubsystem::UpdateWorldState()

@@ -9,6 +9,8 @@
 #include "UDRLWorldStateConfig.h"
 #include "DRLWorldStateSubsystem.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionLoggedSignature, FActionRecord, LoggedRecord);
+
 /**
  * 
  */
@@ -17,22 +19,25 @@ class DYNAMICRESPONSELOOP_API UDRLWorldStateSubsystem : public UGameInstanceSubs
 {
 	GENERATED_BODY()
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionLoggedSignature, FActionRecord, LoggedRecord);
+	FOnActionLoggedSignature OnActionLogged;
+	
 	// Step 1: Called by Player/Companions during the Dungeon phase
-	UFUNCTION(BlueprintCallable, Category = "DEL|Observer")
+	UFUNCTION(BlueprintCallable, Category = "DRL|Observer")
 	void LogAction(FGameplayTag ActionTag, float Intensity = 1.0f);
 
 	// Step 2 & 3: Triggered when returning to the Hub area
-	UFUNCTION(BlueprintCallable, Category = "DEL|Brain")
+	UFUNCTION(BlueprintCallable, Category = "DRL|Brain")
 	void UpdateWorldState();
 
-	UFUNCTION(BlueprintCallable, Category = "DEL|Config")
+	UFUNCTION(BlueprintCallable, Category = "DRL|Config")
 	void SetActiveConfig(UDRLWorldStateConfig* NewConfig);
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DEL|State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DRL|State")
 	TArray<FActionRecord> CurrentRunHistory;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DEL|State")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DRL|State")
 	FGameplayTagContainer CurrentWorldState;
 
 	UPROPERTY(Transient)
