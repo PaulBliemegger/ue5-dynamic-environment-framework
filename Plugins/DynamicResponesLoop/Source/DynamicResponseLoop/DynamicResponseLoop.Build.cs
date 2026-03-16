@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class DynamicResponesLoop : ModuleRules
+public class DynamicResponseLoop : ModuleRules
 {
-	public DynamicResponesLoop(ReadOnlyTargetRules Target) : base(Target)
+	public DynamicResponseLoop(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		

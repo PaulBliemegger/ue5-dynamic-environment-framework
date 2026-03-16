@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FDynamicResponesLoopModule : public IModuleInterface
+class FDynamicResponseLoop : public IModuleInterface
 {
 public:
 

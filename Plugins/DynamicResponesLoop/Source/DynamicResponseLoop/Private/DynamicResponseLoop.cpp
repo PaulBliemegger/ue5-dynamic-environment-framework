@@ -1,15 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "DynamicResponesLoop.h"
+#include "DynamicResponseLoop.h"
 
 #define LOCTEXT_NAMESPACE "FDynamicResponesLoopModule"
 
-void FDynamicResponesLoopModule::StartupModule()
+void FDynamicResponseLoop::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
-void FDynamicResponesLoopModule::ShutdownModule()
+void FDynamicResponseLoop::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -17,4 +17,4 @@ void FDynamicResponesLoopModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FDynamicResponesLoopModule, DynamicResponesLoop)
+IMPLEMENT_MODULE(FDynamicResponseLoop, DynamicResponseLoop)

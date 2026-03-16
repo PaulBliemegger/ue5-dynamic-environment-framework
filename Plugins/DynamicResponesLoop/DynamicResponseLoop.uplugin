@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "DynamicResponesLoop",
+	"FriendlyName": "DynamicResponseLoop",
 	"Description": "A framework to define systems and evaluators that lead to adaptive and emergent gameplay.",
 	"Category": "Other",
 	"CreatedBy": "Paul Bliemegger",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "DynamicResponesLoop",
+			"Name": "DynamicResponseLoop",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
