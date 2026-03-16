@@ -10,6 +10,7 @@
 #include "DRLWorldStateSubsystem.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionLoggedSignature, FActionRecord, LoggedRecord);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWorldStateUpdatedSignature, const FGameplayTagContainer&, ActiveWorldState);
 
 /**
  * 
@@ -19,8 +20,11 @@ class DYNAMICRESPONSELOOP_API UDRLWorldStateSubsystem : public UGameInstanceSubs
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintAssignable, Category = "DEL|Events")
+	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
 	FOnActionLoggedSignature OnActionLogged;
+	
+	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
+	FOnWorldStateUpdatedSignature OnWorldStateUpdated;
 	
 	// Step 1: Called by Player/Companions during the Dungeon phase
 	UFUNCTION(BlueprintCallable, Category = "DRL|Observer")
@@ -32,6 +36,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DRL|Config")
 	void SetActiveConfig(UDRLWorldStateConfig* NewConfig);
+	
+	UFUNCTION(BlueprintCallable, Category = "DRL|State")
+	FGameplayTagContainer GetCurrentWorldState() const { return CurrentWorldState; }
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DRL|State")

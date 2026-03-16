@@ -22,6 +22,7 @@ void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 			}
 		}
 	}
+	UE_LOG(LogTemp, Log, TEXT("DRLWorldStateSubsystem: Active Config Set - %s"), *GetNameSafe(ActiveConfig));
 }
 
 void UDRLWorldStateSubsystem::LogAction(FGameplayTag ActionTag, float Intensity)
@@ -45,16 +46,23 @@ void UDRLWorldStateSubsystem::LogAction(FGameplayTag ActionTag, float Intensity)
 void UDRLWorldStateSubsystem::UpdateWorldState()
 {
 	if (!ActiveConfig) return;
+	
+	FGameplayTagContainer NewState = CurrentWorldState;
 
 	// Step 2 & 3: Run the Data Transformation via Evaluators
 	for (UDRLWorldStateEvaluator* Evaluator : InstancedEvaluators)
 	{
 		if (Evaluator)
 		{
-			Evaluator->Evaluate(CurrentRunHistory, CurrentWorldState);
+			NewState = Evaluator->Evaluate(CurrentRunHistory, CurrentWorldState);
 		}
 	}
-
-	// Note: If bIsControlGroup is true, we will skip broadcasting the delegate here in Phase 4.
-	// Telemetry export (Phase 5) should be called directly after this loop.
+	
+	CurrentWorldState = NewState;
+	CurrentRunHistory.Empty();
+	
+	if (!ActiveConfig->bIsControlGroup)
+	{
+		OnWorldStateUpdated.Broadcast(CurrentWorldState);
+	}
 }
