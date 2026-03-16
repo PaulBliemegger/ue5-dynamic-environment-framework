@@ -9,7 +9,7 @@
 #include "UDRLWorldStateConfig.generated.h"
 
 UCLASS(BlueprintType)
-class DYNAMICRESPONSELOOP_API UDELWorldStateConfig : public UDataAsset
+class DYNAMICRESPONSELOOP_API UDRLWorldStateConfig : public UDataAsset
 {
 	GENERATED_BODY()
 
