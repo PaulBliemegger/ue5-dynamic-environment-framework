@@ -2,3 +2,8 @@
 
 
 #include "Evaluators/DRLWorldStateEvaluator.h"
+
+FGameplayTagContainer UDRLWorldStateEvaluator::Evaluate_Implementation(const TArray<FActionRecord>& History, const FGameplayTagContainer& InWorldState)
+{
+	return InWorldState; 
+}
