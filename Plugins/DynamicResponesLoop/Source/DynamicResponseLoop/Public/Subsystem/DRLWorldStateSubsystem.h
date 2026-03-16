@@ -19,7 +19,7 @@ class DYNAMICRESPONSELOOP_API UDRLWorldStateSubsystem : public UGameInstanceSubs
 {
 	GENERATED_BODY()
 public:
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActionLoggedSignature, FActionRecord, LoggedRecord);
+	UPROPERTY(BlueprintAssignable, Category = "DEL|Events")
 	FOnActionLoggedSignature OnActionLogged;
 	
 	// Step 1: Called by Player/Companions during the Dungeon phase
