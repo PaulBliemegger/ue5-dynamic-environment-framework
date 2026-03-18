@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GameplayTagContainer.h"
 #include "Types/DRLTypes.h"
+#include "Metrics/DRLTelemetryProvider.h"
 #include "UDRLWorldStateConfig.h"
 #include "DRLWorldStateSubsystem.generated.h"
 
@@ -20,11 +21,7 @@ class DYNAMICRESPONSELOOP_API UDRLWorldStateSubsystem : public UGameInstanceSubs
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
-	FOnActionLoggedSignature OnActionLogged;
-	
-	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
-	FOnWorldStateUpdatedSignature OnWorldStateUpdated;
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
 	// Step 1: Called by Player/Companions during the Dungeon phase
 	UFUNCTION(BlueprintCallable, Category = "DRL|Observer")
@@ -39,6 +36,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "DRL|State")
 	FGameplayTagContainer GetCurrentWorldState() const { return CurrentWorldState; }
+	
+	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
+	FOnActionLoggedSignature OnActionLogged;
+	
+	UPROPERTY(BlueprintAssignable, Category = "DRL|Events")
+	FOnWorldStateUpdatedSignature OnWorldStateUpdated;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DRL|State")
@@ -53,4 +56,7 @@ protected:
 	// We instantiate the Evaluator classes here so they can hold state if needed
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UDRLWorldStateEvaluator>> InstancedEvaluators;
+	
+	UPROPERTY()
+	UDRLTelemetryProvider* TelemetryProvider;
 };

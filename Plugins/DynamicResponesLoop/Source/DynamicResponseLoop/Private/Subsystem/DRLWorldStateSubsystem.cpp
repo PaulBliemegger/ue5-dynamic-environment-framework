@@ -2,7 +2,17 @@
 
 
 #include "Subsystem/DRLWorldStateSubsystem.h"
+#include "Metrics/DRLMetricsAnalyzer.h"
+#include "Metrics/DRLTelemetryProvider.h"
+#include "Evaluators/DRLWorldStateEvaluator.h"
 #include "Engine/World.h"
+
+void UDRLWorldStateSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	// Create the provider once. It lives as long as the Subsystem.
+	TelemetryProvider = NewObject<UDRLTelemetryProvider>(this);
+}
 
 void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 {
@@ -12,6 +22,8 @@ void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 	if (ActiveConfig)
 	{
 		CurrentWorldState = ActiveConfig->DefaultWorldState;
+		
+		TelemetryProvider->InitializeSession(ActiveConfig);
         
 		// Instantiate evaluators from the provided subclasses
 		InstancedEvaluators.Empty();
@@ -30,19 +42,17 @@ void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 void UDRLWorldStateSubsystem::LogAction(FGameplayTag ActionTag, float Intensity)
 {
 	if (!ActionTag.IsValid()) return;
-
-	FActionRecord NewRecord;
-	NewRecord.ActionTag = ActionTag;
-	NewRecord.Intensity = Intensity;
     
-	if (UWorld* World = GetWorld())
-	{
-		NewRecord.Timestamp = World->GetTimeSeconds();
-	}
+	FActionRecord Record;
+	Record.ActionTag = ActionTag;
+	Record.Intensity = Intensity;
+	Record.Timestamp = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.f;
 
-	CurrentRunHistory.Add(NewRecord);
+	CurrentRunHistory.Add(Record);
 	
-	OnActionLogged.Broadcast(NewRecord);
+	TelemetryProvider->LogActionAsync(ActiveConfig, Record);
+	
+	OnActionLogged.Broadcast(Record);
 }
 
 void UDRLWorldStateSubsystem::UpdateWorldState()
@@ -50,12 +60,27 @@ void UDRLWorldStateSubsystem::UpdateWorldState()
 	if (!ActiveConfig) return;
 	
 	FGameplayTagContainer NewState = CurrentWorldState;
-	
 	for (UDRLWorldStateEvaluator* Evaluator : InstancedEvaluators)
 	{
 		if (Evaluator)
 		{
-			NewState = Evaluator->Evaluate(CurrentRunHistory, CurrentWorldState);
+			NewState = Evaluator->Evaluate(CurrentRunHistory, NewState);
+		}
+	}
+	
+	if (ActiveConfig->bEnableTelemetry)
+	{
+		TSubclassOf<UDRLMetricsAnalyzer> ClassToUse = UDRLMetricsAnalyzer::StaticClass();
+		if (ActiveConfig->AnalyzerClass)
+		{
+			ClassToUse = ActiveConfig->AnalyzerClass;
+		}
+		UDRLMetricsAnalyzer* Analyzer = NewObject<UDRLMetricsAnalyzer>(this, ClassToUse);
+        
+		if (Analyzer)
+		{
+			FRunMetrics Metrics = Analyzer->CalculateRunMetrics(CurrentRunHistory, CurrentWorldState);
+			TelemetryProvider->LogSummaryAsync(ActiveConfig, Metrics, CurrentWorldState);
 		}
 	}
 	
