@@ -6,6 +6,8 @@
 
 void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 {
+	if (ActiveConfig == NewConfig) return;
+	
 	ActiveConfig = NewConfig;
 	if (ActiveConfig)
 	{
@@ -48,8 +50,7 @@ void UDRLWorldStateSubsystem::UpdateWorldState()
 	if (!ActiveConfig) return;
 	
 	FGameplayTagContainer NewState = CurrentWorldState;
-
-	// Step 2 & 3: Run the Data Transformation via Evaluators
+	
 	for (UDRLWorldStateEvaluator* Evaluator : InstancedEvaluators)
 	{
 		if (Evaluator)
