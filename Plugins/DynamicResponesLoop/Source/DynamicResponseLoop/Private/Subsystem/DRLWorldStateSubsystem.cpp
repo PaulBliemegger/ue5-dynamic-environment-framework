@@ -12,6 +12,7 @@ void UDRLWorldStateSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	// Create the provider once. It lives as long as the Subsystem.
 	TelemetryProvider = NewObject<UDRLTelemetryProvider>(this);
+	TelemetryProvider->InitializeSession(ActiveConfig);
 }
 
 void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
@@ -22,8 +23,6 @@ void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 	if (ActiveConfig)
 	{
 		CurrentWorldState = ActiveConfig->DefaultWorldState;
-		
-		TelemetryProvider->InitializeSession(ActiveConfig);
         
 		// Instantiate evaluators from the provided subclasses
 		InstancedEvaluators.Empty();
@@ -35,6 +34,14 @@ void UDRLWorldStateSubsystem::SetActiveConfig(UDRLWorldStateConfig* NewConfig)
 				InstancedEvaluators.Add(NewEval);
 			}
 		}
+		// PRE-INSTANTIATE ANALYZER: This removes the "NewObject" lag during evaluation
+		TSubclassOf<UDRLMetricsAnalyzer> ClassToUse = UDRLMetricsAnalyzer::StaticClass();
+		if (ActiveConfig->AnalyzerClass)
+		{
+			ClassToUse = ActiveConfig->AnalyzerClass;
+		}
+	
+		CachedAnalyzer = NewObject<UDRLMetricsAnalyzer>(this, ClassToUse);
 	}
 	UE_LOG(LogTemp, Log, TEXT("DRLWorldStateSubsystem: Active Config Set - %s"), *GetNameSafe(ActiveConfig));
 }

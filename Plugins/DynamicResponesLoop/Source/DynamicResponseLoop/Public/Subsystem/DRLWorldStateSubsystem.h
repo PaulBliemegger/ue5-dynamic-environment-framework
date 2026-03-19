@@ -59,4 +59,11 @@ protected:
 	
 	UPROPERTY()
 	UDRLTelemetryProvider* TelemetryProvider;
+	
+private:
+	/** * We keep a reference to the analyzer here so we don't have to 
+	 * spawn a new one every time we update the world state.
+	 */
+	UPROPERTY()
+	UDRLMetricsAnalyzer* CachedAnalyzer;
 };

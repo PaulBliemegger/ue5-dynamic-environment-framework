@@ -17,7 +17,8 @@ class DYNAMICRESPONSELOOP_API UDRLWorldStateConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	/** PHASES 1-4: The Core Loop Settings */
+	
+	/* Settings */
 
 	// If true, the system logs data but does NOT broadcast changes to the world.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DRL|Core")
@@ -32,7 +33,7 @@ public:
 	FGameplayTagContainer DefaultWorldState;
 
 
-	/** PHASE 5: Telemetry & Thesis Analysis */
+	/** Telemetry & Thesis Analysis */
 
 	// Master switch for file writing and math calculations.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DRL|Analysis")

@@ -10,16 +10,17 @@ void UDRLTelemetryProvider::InitializeSession(const UDRLWorldStateConfig* Config
 {
 	if (!Config || !Config->bEnableTelemetry) 
 	{
-		CurrentSessionFile = "";
 		UE_LOG(LogTemp, Warning, TEXT("DRLTelemetryProvider: Telemetry disabled, no session file will be created."));
 		return;
 	}
 
-	CurrentRunID = FDateTime::Now().ToString();
-	FString SafeID = CurrentRunID.Replace(TEXT(":"), TEXT("-")).Replace(TEXT("."), TEXT("-"));
-    
-	// Creates a unique file for this specific play session
-	CurrentSessionFile = FPaths::ProjectSavedDir() + TEXT("DRL_Telemetry/Run_") + SafeID + TEXT(".csv");
+	CurrentRunNumber = 0;
+	
+	FString Timestamp = FDateTime::Now().ToString(TEXT("%Y%m%d_%H%M"));
+	FString MachineName = FPlatformProcess::ComputerName();
+	
+	SessionID = FString::Printf(TEXT("%s_%s"), *Timestamp, *MachineName);
+	CurrentSessionFile = FPaths::ProjectSavedDir() + TEXT("DRL_Telemetry/Session_") + SessionID + TEXT(".csv");
 	
 	UE_LOG(LogTemp, Log, TEXT("DRLTelemetryProvider: Initialized new telemetry session with file: %s"), *CurrentSessionFile);
 }
@@ -28,8 +29,13 @@ void UDRLTelemetryProvider::LogActionAsync(const UDRLWorldStateConfig* Config, c
 {
 	if (!Config || !Config->bEnableTelemetry || !Config->bEnableLiveHeartbeat || CurrentSessionFile.IsEmpty()) return;
 
-	FString CSVLine = FString::Printf(TEXT("%s,%.2f,%s,%.2f,,, %d,\n"),
-		*CurrentRunID, Record.Timestamp, *Record.ActionTag.ToString(), Record.Intensity, Config->bIsControlGroup ? 1 : 0);
+	FString CSVLine = FString::Printf(TEXT("%s,%d,ACTION,%.2f,%s,%.2f,,,,%d,\n"),
+		*SessionID, 
+		CurrentRunNumber + 1, 
+		Record.Timestamp, 
+		*Record.ActionTag.ToString(), 
+		Record.Intensity, 
+		Config->bIsControlGroup ? 1 : 0);
 
 	SaveCSVLineInternalAsync(CurrentSessionFile, CSVLine);
 }
@@ -37,10 +43,16 @@ void UDRLTelemetryProvider::LogActionAsync(const UDRLWorldStateConfig* Config, c
 void UDRLTelemetryProvider::LogSummaryAsync(const UDRLWorldStateConfig* Config, const FRunMetrics& Metrics, const FGameplayTagContainer& FinalState)
 {
 	if (!Config || !Config->bEnableTelemetry || CurrentSessionFile.IsEmpty()) return;
+	
+	CurrentRunNumber++;
 
-	FString SummaryLine = FString::Printf(TEXT("%s,SUMMARY,---,---,%.4f,%.2f,%d,\"%s\"\n"),
-		*CurrentRunID, Metrics.ActionEntropy, Metrics.Duration, 
-		Config->bIsControlGroup ? 1 : 0, *FinalState.ToStringSimple());
+	FString SummaryLine = FString::Printf(TEXT("%s,%d,SUMMARY,,,%.4f,%.2f,%d,\"%s\"\n"),
+		*SessionID, 
+		CurrentRunNumber, 
+		Metrics.ActionEntropy, 
+		Metrics.Duration, 
+		Config->bIsControlGroup ? 1 : 0, 
+		*FinalState.ToStringSimple());
 
 	SaveCSVLineInternalAsync(CurrentSessionFile, SummaryLine);
 }
@@ -51,19 +63,17 @@ void UDRLTelemetryProvider::SaveCSVLineInternalAsync(const FString& FilePath, co
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [FilePath, Line]()
 	{
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-        
-		// Ensure folder exists
-		FString Dir = FPaths::GetPath(FilePath);
-		if (!PlatformFile.DirectoryExists(*Dir)) PlatformFile.CreateDirectory(*Dir);
+				FString FinalOutput = Line;
 
-		FString FinalOutput = Line;
-		if (!PlatformFile.FileExists(*FilePath))
-		{
-			// Column Headers
-			FinalOutput = TEXT("RunID,Timestamp,ActionTag,Intensity,Entropy,Duration,IsControl,WorldState\n") + Line;
-		}
+				if (!PlatformFile.FileExists(*FilePath))
+				{
+					// The "Master Header" - highly extendable! 
+					// If you add "Damage" later, just add ",Damage" to the end here and in the Printfs above.
+					FString Header = TEXT("SessionID,RunNumber,EntryType,Timestamp,ActionTag,Intensity,Entropy,Duration,IsControl,WorldState\n");
+					FinalOutput = Header + Line;
+				}
 
-		FFileHelper::SaveStringToFile(FinalOutput, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+				FFileHelper::SaveStringToFile(FinalOutput, *FilePath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 	});
 }
 

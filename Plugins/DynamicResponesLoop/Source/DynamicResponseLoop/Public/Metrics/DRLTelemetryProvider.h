@@ -16,6 +16,9 @@ class DYNAMICRESPONSELOOP_API UDRLTelemetryProvider : public UObject
 private:
 	FString CurrentSessionFile;
 	FString CurrentRunID;
+	int32 CurrentRunNumber = 0;
+	FString SessionID;
+	
 	void SaveCSVLineInternalAsync(const FString& FilePath, const FString& Line);
 public:
 	/** Exports a single run's data to a CSV file in /Saved/DRL_Telemetry/ */
